@@ -42,8 +42,14 @@ HTTPS only, via `docker-compose.prod.yml`:
 cp .env.prod.example .env.prod          # then fill in real secrets
 # set server_name in docker/nginx/app-prod.conf, drop TLS certs in docker/nginx/ssl/
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec app \
+  composer install --no-dev --optimize-autoloader
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec app php artisan migrate --force
 ```
+
+The app code is bind-mounted, so a plain `up -d` never rebuilds the image — pass
+`--build` after any `Dockerfile` change (e.g. a new PHP extension), or the
+container keeps running the old one.
 
 Certs: `docker/nginx/ssl/fullchain.pem` + `privkey.pem` (git-ignored), or point
 that volume at your Let's Encrypt live dir. HTTP is refused by design.
