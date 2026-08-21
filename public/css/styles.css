@@ -1,0 +1,159 @@
+/* Classical — design tokens and the component classes the Pati recipe site
+   actually uses. Trimmed from the full design system to just the index + detail
+   pages (nav, cards, tags, plate photo, ghost button, rules). */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&display=swap');
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201f1d;
+  --color-accent: #b68235;
+  --color-divider: color-mix(in srgb, #201f1d 16%, transparent);
+
+  /* Accent + neutral ramp steps referenced by the tag and kicker styles. */
+  --color-accent-100: #fff3e4;
+  --color-accent-700: #7d5411;
+  --color-accent-800: #5a3b0a;
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-800: #444141;
+
+  --font-heading: "Cormorant Garamond", system-ui, sans-serif;
+  --font-heading-weight: 600;
+  --font-body: "Lora", system-ui, sans-serif;
+
+  --space-1: 4.6px;
+  --space-2: 9.2px;
+  --space-3: 13.8px;
+  --space-4: 18.4px;
+
+  --radius-md: 4px;
+
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px; line-height: 1.55; font-weight: 400;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+figure { margin: 0; }
+figcaption {
+  font-size: 11px; margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — plate: the photo treatment (sepia grade + mat border) — */
+.plate {
+  filter: sepia(0.22) saturate(0.82) contrast(1.05); box-sizing: border-box;
+  border: 6px solid var(--color-surface); outline: 1px solid var(--color-divider);
+}
+
+/* — rules — */
+.hr {
+  height: 1px; border: 0; margin: var(--space-4) 0;
+  background: var(--color-divider);
+}
+
+/* — buttons (ghost only — the "← Toate rețetele" back link) — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text);
+  background: transparent; border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+
+/* — cards — */
+.card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: transparent; border: 1px solid var(--color-divider);
+}
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.card-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 17px; line-height: 1.2;
+}
+.card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.card-meta {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; font-size: 11px;
+  letter-spacing: 0.02em; padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+.tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+.tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+/* — navigation — */
+.nav {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 18px; margin-right: auto;
+}
+.nav a { color: inherit; text-decoration: none; font-size: 14px; }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* — method: numbered steps rendered from the <ol> inside `description` — */
+.recipe-method ol { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.recipe-method ol > li {
+  counter-increment: step;
+  display: flex; gap: 18px; padding: 16px 0;
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 15px; line-height: 1.7; text-align: justify; hyphens: auto;
+}
+.recipe-method ol > li::before {
+  content: counter(step);
+  font-family: var(--font-heading); font-weight: 400; font-size: 26px;
+  line-height: 1; color: var(--color-accent);
+  font-feature-settings: 'tnum' 1; min-width: 30px; flex: none;
+}
+/* Keep any other block the admin writes in `description` readable. */
+.recipe-method p { margin: 0 0 var(--space-3); }
+
+/* — photo: real image inside the .plate frame, or a sepia placeholder when null — */
+.plate img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.plate-empty {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 4 / 3; background: var(--color-surface);
+  color: color-mix(in srgb, var(--color-text) 40%, transparent);
+  font-family: var(--font-heading); font-size: 15px; text-align: center;
+  padding: 16px; line-height: 1.3;
+}
