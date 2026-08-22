@@ -1,0 +1,55 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          printf '%s\n' "${{ secrets.SERVER_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          ssh -o BatchMode=yes \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
+
+            set -euo pipefail
+
+            cd /var/www/my-app
+
+            git fetch origin master
+            git checkout master
+            git reset --hard origin/master
+
+            sudo docker compose -f docker-compose.prod.yml up -d --build
+
+            sudo docker compose -f docker-compose.prod.yml exec -T app composer install \
+              --no-dev \
+              --prefer-dist \
+              --no-interaction \
+              --optimize-autoloader
+
+            sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+
+            sudo docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
+
+            sudo docker compose -f docker-compose.prod.yml exec -T app php artisan queue:restart
+
+          EOF
