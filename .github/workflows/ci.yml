@@ -20,6 +20,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          extensions: sqlite3, pdo_sqlite
           tools: composer:v2
           coverage: none
 
@@ -32,6 +33,11 @@ jobs:
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
 
       - name: Lint (php-parallel-lint)
         if: ${{ !cancelled() }}
