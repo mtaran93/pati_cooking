@@ -13,11 +13,10 @@ class RecipeController extends Controller
     public function index(): View
     {
         $recipes = Recipe::query()
-            ->with('category:id,name')
-            ->orderByDesc('created_at')
+            ->with('category:id,name')->latest()
             ->get(['id', 'title', 'slug', 'category_id', 'blurb', 'time_label', 'servings', 'difficulty', 'calories', 'photo']);
 
-        return view('recipes.index', compact('recipes'));
+        return view('recipes.index', ['recipes' => $recipes]);
     }
 
     /**
@@ -25,6 +24,6 @@ class RecipeController extends Controller
      */
     public function show(Recipe $recipe): View
     {
-        return view('recipes.show', compact('recipe'));
+        return view('recipes.show', ['recipe' => $recipe]);
     }
 }
