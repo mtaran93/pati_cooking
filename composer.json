@@ -58,7 +58,7 @@
         "lint": "parallel-lint --exclude vendor --exclude bootstrap/cache --exclude storage --exclude build .",
         "pint": "pint --test",
         "phpmd": "phpmd app,database,routes text phpmd.xml",
-        "phpstan": "phpstan analyse",
+        "phpstan": "phpstan analyse --memory-limit=1G",
         "rector": "rector process --dry-run",
         "quality": [
             "@lint",
