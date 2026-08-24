@@ -38,18 +38,18 @@ jobs:
             git checkout master
             git reset --hard origin/master
 
-            sudo docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml up -d --build
 
-            sudo docker compose -f docker-compose.prod.yml exec -T app composer install \
+            docker compose -f docker-compose.prod.yml exec -T app composer install \
               --no-dev \
               --prefer-dist \
               --no-interaction \
               --optimize-autoloader
 
-            sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
-            sudo docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
+            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
 
-            sudo docker compose -f docker-compose.prod.yml exec -T app php artisan queue:restart
+            docker compose -f docker-compose.prod.yml exec -T app php artisan queue:restart
 
           EOF
