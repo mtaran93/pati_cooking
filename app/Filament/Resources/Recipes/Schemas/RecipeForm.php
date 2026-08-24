@@ -23,7 +23,7 @@ class RecipeForm
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(function (string $operation, $state, callable $get, callable $set) {
+                    ->afterStateUpdated(function (string $operation, $state, callable $get, callable $set): void {
                         // Only auto-fill the slug on create, and only while it's untouched.
                         if ($operation === 'create' && blank($get('slug'))) {
                             $set('slug', Str::slug((string) $state));

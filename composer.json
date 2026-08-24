@@ -13,13 +13,18 @@
         "mews/purifier": "^3.4"
     },
     "require-dev": {
+        "driftingly/rector-laravel": "^2.5",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.10",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^12.5.12"
+        "php-parallel-lint/php-parallel-lint": "^1.4",
+        "phpmd/phpmd": "^2.15",
+        "phpunit/phpunit": "^12.5.12",
+        "rector/rector": "^2.6"
     },
     "autoload": {
         "psr-4": {
@@ -49,6 +54,18 @@
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
+        ],
+        "lint": "parallel-lint --exclude vendor --exclude bootstrap/cache --exclude storage --exclude build .",
+        "pint": "pint --test",
+        "phpmd": "phpmd app,database,routes text phpmd.xml",
+        "phpstan": "phpstan analyse",
+        "rector": "rector process --dry-run",
+        "quality": [
+            "@lint",
+            "@pint",
+            "@phpmd",
+            "@phpstan",
+            "@rector"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

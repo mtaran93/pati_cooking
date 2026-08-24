@@ -36,11 +36,11 @@ class RecipeSeeder extends Seeder
     private function stepsToHtml(array $steps): string
     {
         $items = array_map(
-            fn (string $s) => '<li>' . e($s) . '</li>',
+            fn (string $s): string => '<li>'.e($s).'</li>',
             $steps
         );
 
-        return '<ol>' . implode('', $items) . '</ol>';
+        return '<ol>'.implode('', $items).'</ol>';
     }
 
     private function recipes(): array

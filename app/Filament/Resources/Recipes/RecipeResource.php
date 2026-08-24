@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Recipes;
 
 use App\Filament\Resources\Recipes\Pages\CreateRecipe;
