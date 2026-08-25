@@ -11,11 +11,12 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Deploy
+        shell: bash
         env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
           SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
@@ -26,16 +27,20 @@ jobs:
           printf '%s\n' "$SERVER_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
 
-          ssh -o BatchMode=yes "$SERVER_USER@$SERVER_HOST" 'bash -se' << 'EOF'
+          quoted_release_tag=$(printf '%q' "$RELEASE_TAG")
+
+          ssh -o BatchMode=yes "$SERVER_USER@$SERVER_HOST" "bash -se -- $quoted_release_tag" << 'EOF'
             set -euo pipefail
+
+            release_tag=$1
 
             cd /var/html/pati_cooking
 
             compose() { docker compose -f docker-compose.prod.yml "$@"; }
 
-            git fetch origin master
-            git checkout master
-            git reset --hard origin/master
+            git fetch --force origin "refs/tags/$release_tag:refs/tags/$release_tag"
+            git checkout --detach "refs/tags/$release_tag"
+            git reset --hard "refs/tags/$release_tag"
 
             compose up -d --build
             compose exec -T app composer install \
