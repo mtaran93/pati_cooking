@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Mews\Purifier\Facades\Purifier;
 
 #[Fillable([
-    'title', 'slug', 'category_id', 'blurb', 'note', 'time_label',
-    'servings', 'difficulty', 'calories', 'photo', 'ingredients', 'description',
+    'title', 'slug', 'blurb', 'note', 'time_label',
+    'servings', 'difficulty', 'calories', 'ingredients', 'description',
 ])]
 class Recipe extends Model
 {
@@ -61,8 +62,28 @@ class Recipe extends Model
         return 'slug';
     }
 
-    public function category(): BelongsTo
+    public function subcategories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Subcategory::class);
+    }
+
+    /**
+     * Gallery photos and videos, in display order. The first image is the
+     * recipe's main/cover image (see coverMedia()).
+     *
+     * @return HasMany<RecipeMedia, $this>
+     */
+    public function media(): HasMany
+    {
+        return $this->hasMany(RecipeMedia::class)->orderBy('sort_order');
+    }
+
+    /**
+     * The main image: the first photo in gallery order. Used as the card
+     * thumbnail and the show-page hero. Null when the gallery has no images.
+     */
+    public function coverMedia(): ?RecipeMedia
+    {
+        return $this->media->firstWhere('type', 'image');
     }
 }

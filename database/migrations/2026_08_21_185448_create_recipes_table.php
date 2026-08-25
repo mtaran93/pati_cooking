@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('slug')->unique();
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->string('blurb', 300);
             $table->string('note')->nullable();
             $table->string('time_label');

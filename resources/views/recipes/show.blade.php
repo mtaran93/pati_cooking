@@ -3,11 +3,13 @@
 @section('title', $recipe->title . ' — Pati')
 
 @section('content')
+    @php($cover = $recipe->coverMedia())
+    @php($gallery = $recipe->media->where('id', '!==', optional($cover)->id)->values())
     <div style="padding:clamp(24px,4vw,44px) 0 clamp(40px,6vw,72px)">
         <a href="{{ route('recipes.index') }}" class="btn btn-ghost" style="margin-bottom:24px">← Toate rețetele</a>
 
         <header style="max-width:60ch">
-            <span class="card-kicker" style="font-size:12px;display:block;margin-bottom:12px">{{ $recipe->category?->name }}</span>
+            <span class="card-kicker" style="font-size:12px;display:block;margin-bottom:12px">{{ $recipe->subcategories->pluck('category.name')->unique()->join(' · ') }}</span>
             <h1 style="font-weight:400;font-size:clamp(34px,5vw,58px);line-height:1.1;margin:0 0 12px;margin-left:-0.042em">{{ $recipe->title }}</h1>
             <p style="font-size:16px;line-height:1.7;margin:0 0 14px;color:color-mix(in srgb,var(--color-text) 78%, transparent)">{{ $recipe->blurb }}</p>
 
@@ -29,8 +31,8 @@
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(20px,4vw,44px);align-items:start;margin-top:clamp(20px,3vw,36px)">
             <figure class="plate" style="margin:0;aspect-ratio:4/3">
-                @if ($recipe->photo)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($recipe->photo) }}" alt="{{ $recipe->title }} — fotografia preparatului">
+                @if ($cover)
+                    <img src="{{ $cover->url() }}" alt="{{ $recipe->title }} — fotografia preparatului">
                 @else
                     <div class="plate-empty">{{ $recipe->title }}</div>
                 @endif
@@ -49,5 +51,83 @@
             <h6 style="margin:0 0 6px;color:var(--color-accent-700)">Preparare</h6>
             <div class="recipe-method">{!! $recipe->description !!}</div>
         </section>
+
+        @if ($gallery->isNotEmpty())
+            <section style="margin-top:clamp(28px,5vw,52px)">
+                <h6 style="margin:0 0 12px;color:var(--color-accent-700)">Galerie</h6>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:clamp(8px,1.5vw,14px)">
+                    @foreach ($gallery as $item)
+                        <button type="button" class="gallery-thumb" data-media-src="{{ $item->url() }}" data-media-type="{{ $item->type }}" aria-label="Deschide media {{ $loop->iteration }}">
+                            @if ($item->type === 'video')
+                                <video src="{{ $item->url() }}#t=0.1" muted preload="metadata" playsinline></video>
+                                <span class="gallery-play" aria-hidden="true">▶</span>
+                            @else
+                                <img src="{{ $item->url() }}" alt="{{ $recipe->title }} — media {{ $loop->iteration }}" loading="lazy">
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
+            </section>
+
+            <div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Vizualizare media">
+                <button type="button" class="lightbox-close" data-lightbox-close aria-label="Închide">×</button>
+                <div class="lightbox-stage" data-lightbox-stage></div>
+            </div>
+
+            <style>
+                .gallery-thumb{position:relative;display:block;padding:0;border:0;margin:0;cursor:pointer;background:var(--color-divider);border-radius:12px;overflow:hidden;aspect-ratio:1/1;width:100%}
+                .gallery-thumb img,.gallery-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+                .gallery-thumb:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+                .gallery-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.55);background:rgba(0,0,0,.18);pointer-events:none}
+                .lightbox{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:clamp(16px,4vw,48px);background:rgba(0,0,0,.82)}
+                .lightbox[hidden]{display:none}
+                .lightbox-stage{max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center}
+                .lightbox-stage img,.lightbox-stage video{max-width:100%;max-height:88vh;border-radius:10px;display:block}
+                .lightbox-close{position:absolute;top:clamp(10px,2vw,20px);right:clamp(10px,2vw,20px);width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+                .lightbox-close:hover{background:rgba(255,255,255,.26)}
+            </style>
+
+            <script>
+                (function () {
+                    const lightbox = document.getElementById('lightbox');
+                    if (!lightbox) return;
+                    const stage = lightbox.querySelector('[data-lightbox-stage]');
+
+                    function close() {
+                        lightbox.hidden = true;
+                        stage.replaceChildren();
+                        document.body.style.overflow = '';
+                    }
+
+                    function open(src, type) {
+                        const el = document.createElement(type === 'video' ? 'video' : 'img');
+                        el.src = src;
+                        if (type === 'video') {
+                            el.controls = true;
+                            el.autoplay = true;
+                            el.playsInline = true;
+                        } else {
+                            el.alt = '';
+                        }
+                        stage.replaceChildren(el);
+                        lightbox.hidden = false;
+                        document.body.style.overflow = 'hidden';
+                    }
+
+                    document.querySelectorAll('.gallery-thumb').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            open(btn.dataset.mediaSrc, btn.dataset.mediaType);
+                        });
+                    });
+
+                    lightbox.addEventListener('click', function (e) {
+                        if (e.target === lightbox || e.target.hasAttribute('data-lightbox-close')) close();
+                    });
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape' && !lightbox.hidden) close();
+                    });
+                })();
+            </script>
+        @endif
     </div>
 @endsection

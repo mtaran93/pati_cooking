@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Recipes\Tables;
 
+use App\Models\Recipe;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -17,10 +18,11 @@ class RecipesTable
     {
         return $table
             ->columns([
-                ImageColumn::make('photo')
+                ImageColumn::make('cover')
                     ->label('')
                     ->disk('public')
-                    ->square(),
+                    ->square()
+                    ->state(fn (Recipe $record): ?string => $record->coverMedia()?->path),
 
                 TextColumn::make('title')
                     ->label('Titlu')
@@ -28,10 +30,9 @@ class RecipesTable
                     ->sortable()
                     ->weight('medium'),
 
-                TextColumn::make('category.name')
-                    ->label('Categorie')
-                    ->badge()
-                    ->sortable(),
+                TextColumn::make('subcategories.name')
+                    ->label('Subcategorii')
+                    ->badge(),
 
                 TextColumn::make('time_label')
                     ->label('Timp'),
@@ -59,6 +60,7 @@ class RecipesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->modifyQueryUsing(fn ($query) => $query->with('media'))
             ->defaultSort('created_at', 'desc')
             ->filters([
                 //

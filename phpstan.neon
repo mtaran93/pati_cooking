@@ -7,4 +7,4 @@ parameters:
     paths:
         - app
 
-    tmpDir: build/phpstan
+    tmpDir: /tmp/recipes-phpstan
