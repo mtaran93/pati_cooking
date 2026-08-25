@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recipe;
+use App\Models\Subcategory;
 use Illuminate\Contracts\View\View;
 
 class RecipeController extends Controller
@@ -13,10 +14,28 @@ class RecipeController extends Controller
     public function index(): View
     {
         $recipes = Recipe::query()
-            ->with('category:id,name')->latest()
-            ->get(['id', 'title', 'slug', 'category_id', 'blurb', 'time_label', 'servings', 'difficulty', 'calories', 'photo']);
+            ->with(['subcategories.category', 'media'])->latest()
+            ->get(['id', 'title', 'slug', 'blurb', 'time_label', 'servings', 'difficulty', 'calories']);
 
         return view('recipes.index', ['recipes' => $recipes]);
+    }
+
+    /**
+     * Card grid filtered to a single subcategory. Reuses the index view.
+     */
+    public function subcategory(Subcategory $subcategory): View
+    {
+        $recipes = $subcategory->recipes()
+            ->with(['subcategories.category', 'media'])->latest()
+            ->get(['recipes.id', 'title', 'slug', 'blurb', 'time_label', 'servings', 'difficulty', 'calories']);
+
+        return view('recipes.index', [
+            'recipes' => $recipes,
+            'pageTitle' => $subcategory->name.' — Rețetele lui Pati',
+            'kicker' => $subcategory->category->name,
+            'heading' => $subcategory->name,
+            'intro' => null,
+        ]);
     }
 
     /**
@@ -24,6 +43,8 @@ class RecipeController extends Controller
      */
     public function show(Recipe $recipe): View
     {
+        $recipe->load('subcategories.category', 'media');
+
         return view('recipes.show', ['recipe' => $recipe]);
     }
 }

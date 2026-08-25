@@ -36,20 +36,15 @@ class RecipeForm
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
 
-                Select::make('category_id')
-                    ->label('Categorie')
-                    ->relationship('category', 'name')
+                Select::make('subcategories')
+                    ->label('Subcategorii')
+                    ->relationship('subcategories', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => "{$record->category->name} › {$record->name}")
+                    ->multiple()
                     ->required()
                     ->native(false)
                     ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->label('Nume')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique('categories', 'name'),
-                    ]),
+                    ->preload(),
 
                 Textarea::make('blurb')
                     ->label('Descriere scurtă')
@@ -89,12 +84,22 @@ class RecipeForm
                     ->numeric()
                     ->minValue(0),
 
-                FileUpload::make('photo')
-                    ->label('Fotografie')
-                    ->image()
-                    ->disk('public')
-                    ->directory('recipes')
-                    ->imageEditor()
+                Repeater::make('media')
+                    ->label('Galerie foto/video')
+                    ->helperText('Prima fotografie devine imaginea principală. Trage pentru a reordona.')
+                    ->relationship()
+                    ->schema([
+                        FileUpload::make('path')
+                            ->label('Fișier')
+                            ->disk('public')
+                            ->directory('recipes/media')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'])
+                            ->required(),
+                    ])
+                    ->orderColumn('sort_order')
+                    ->addActionLabel('Adaugă foto/video')
+                    ->reorderable()
+                    ->collapsible()
                     ->columnSpanFull(),
 
                 Repeater::make('ingredients')
