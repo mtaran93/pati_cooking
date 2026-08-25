@@ -1,11 +1,8 @@
 name: Deploy Production
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches:
-      - master
+  release:
+    types: [published]
 
 concurrency:
   group: production-deploy
@@ -17,42 +14,36 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-
-          printf '%s\n' "${{ secrets.SERVER_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
       - name: Deploy
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          ssh -o BatchMode=yes \
-            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SERVER_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
 
+          ssh -o BatchMode=yes "$SERVER_USER@$SERVER_HOST" 'bash -se' << 'EOF'
             set -euo pipefail
 
             cd /var/html/pati_cooking
+
+            compose() { docker compose -f docker-compose.prod.yml "$@"; }
 
             git fetch origin master
             git checkout master
             git reset --hard origin/master
 
-            docker compose -f docker-compose.prod.yml up -d --build
-
-            docker compose -f docker-compose.prod.yml exec -T app composer install \
+            compose up -d --build
+            compose exec -T app composer install \
               --no-dev \
               --prefer-dist \
               --no-interaction \
               --optimize-autoloader
-
-            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-
-            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
-
-            docker compose -f docker-compose.prod.yml exec -T app php artisan queue:restart
-
+            compose exec -T app php artisan migrate --force
+            compose exec -T app php artisan optimize
+            compose exec -T app php artisan queue:restart
           EOF
