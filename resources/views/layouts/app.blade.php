@@ -16,6 +16,23 @@
                 <span style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--color-accent-700);margin-top:3px">Rețete sănătoase</span>
             </span>
         </a>
+        @if (($navCategories ?? collect())->isNotEmpty())
+            <div class="nav-menu">
+                @foreach ($navCategories as $category)
+                    @continue ($category->subcategories->isEmpty())
+                    <div class="nav-item">
+                        <button type="button" class="nav-link" aria-haspopup="true">{{ $category->name }}
+                            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </button>
+                        <div class="megamenu">
+                            @foreach ($category->subcategories as $sub)
+                                <a href="{{ route('recipes.subcategory', $sub) }}" class="mega-recipe">{{ $sub->name }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </nav>
 
     <div style="max-width:1160px;margin:0 auto;padding:0 clamp(18px,5vw,64px)">

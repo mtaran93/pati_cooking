@@ -30,6 +30,12 @@ class CategoryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'categorii';
 
+    public static function canCreate(): bool
+    {
+        // Top-level taxonomy is capped at Category::MAX (6).
+        return static::getModel()::count() < Category::MAX;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return CategoryForm::configure($schema);

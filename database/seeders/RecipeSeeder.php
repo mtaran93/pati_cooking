@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Recipe;
+use App\Models\Subcategory;
 use Illuminate\Database\Seeder;
 use Mews\Purifier\Facades\Purifier;
 
@@ -22,14 +23,21 @@ class RecipeSeeder extends Seeder
             $steps = $data['steps'];
             unset($data['steps']);
 
-            // Resolve the category name to its FK (self-sufficient if CategorySeeder
-            // was skipped).
-            $data['category_id'] = Category::firstOrCreate(['name' => $data['category']])->id;
-            unset($data['category']);
+            // Resolve [category, subcategory] pairs to Subcategory ids (self-sufficient
+            // if the Category/Subcategory seeders were skipped).
+            $subcategoryIds = array_map(
+                fn (array $pair): int => Subcategory::firstOrCreate([
+                    'category_id' => Category::firstOrCreate(['name' => $pair[0]])->id,
+                    'name' => $pair[1],
+                ])->id,
+                $data['subcategories']
+            );
+            unset($data['subcategories']);
 
             $data['description'] = Purifier::clean($this->stepsToHtml($steps));
 
-            Recipe::updateOrCreate(['slug' => $data['slug']], $data);
+            $recipe = Recipe::updateOrCreate(['slug' => $data['slug']], $data);
+            $recipe->subcategories()->sync($subcategoryIds);
         }
     }
 
@@ -48,7 +56,7 @@ class RecipeSeeder extends Seeder
         return [
             [
                 'slug' => 'bruschetta-con-avocado',
-                'category' => 'Aperitive',
+                'subcategories' => [['Aperitive', 'Bruschete']],
                 'title' => 'Bruschetta con avocado',
                 'time_label' => '15 min',
                 'servings' => 6,
@@ -61,7 +69,7 @@ class RecipeSeeder extends Seeder
             ],
             [
                 'slug' => 'spaghetti-alla-carbonara',
-                'category' => 'Fel principal',
+                'subcategories' => [['Fel principal', 'Paste']],
                 'title' => 'Spaghetti alla carbonara',
                 'time_label' => '25 min',
                 'servings' => 4,
@@ -74,7 +82,7 @@ class RecipeSeeder extends Seeder
             ],
             [
                 'slug' => 'risotto-alla-milanese',
-                'category' => 'Fel principal',
+                'subcategories' => [['Fel principal', 'Risotto']],
                 'title' => 'Risotto alla milanese',
                 'time_label' => '40 min',
                 'servings' => 4,
@@ -87,7 +95,7 @@ class RecipeSeeder extends Seeder
             ],
             [
                 'slug' => 'tagliatelle-al-ragu',
-                'category' => 'Fel principal',
+                'subcategories' => [['Fel principal', 'Paste']],
                 'title' => 'Tagliatelle al ragù',
                 'time_label' => '3 ore',
                 'servings' => 6,
@@ -100,7 +108,7 @@ class RecipeSeeder extends Seeder
             ],
             [
                 'slug' => 'caprese-con-avocado',
-                'category' => 'Salate',
+                'subcategories' => [['Salate', 'Reci'], ['Aperitive', 'Reci']],
                 'title' => 'Caprese con avocado',
                 'time_label' => '10 min',
                 'servings' => 4,
@@ -113,7 +121,7 @@ class RecipeSeeder extends Seeder
             ],
             [
                 'slug' => 'tiramisu',
-                'category' => 'Desert',
+                'subcategories' => [['Desert', 'Cremoase']],
                 'title' => 'Tiramisù',
                 'time_label' => '30 min + 4 ore repaus',
                 'servings' => 8,

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources\Categories\Tables;
+namespace App\Filament\Resources\Subcategories\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -10,7 +10,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class CategoriesTable
+class SubcategoriesTable
 {
     public static function configure(Table $table): Table
     {
@@ -22,9 +22,14 @@ class CategoriesTable
                     ->sortable()
                     ->weight('medium'),
 
-                TextColumn::make('subcategories_count')
-                    ->label('Subcategorii')
-                    ->counts('subcategories')
+                TextColumn::make('category.name')
+                    ->label('Categorie')
+                    ->badge()
+                    ->sortable(),
+
+                TextColumn::make('recipes_count')
+                    ->label('Rețete')
+                    ->counts('recipes')
                     ->sortable(),
 
                 TextColumn::make('created_at')
