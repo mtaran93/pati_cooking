@@ -42,18 +42,18 @@ jobs:
             git checkout --detach "refs/tags/$release_tag"
             git reset --hard "refs/tags/$release_tag"
 
-            compose up -d --build
+            compose up -d --build </dev/null
             compose exec -T -u root app sh -lc '
               install -d -o www-data -g www-data -m 775 storage/logs bootstrap/cache
               chown -R www-data:www-data storage bootstrap/cache
               chmod -R ug+rwX storage bootstrap/cache
-            '
+            ' </dev/null
             compose exec -T app composer install \
               --no-dev \
               --prefer-dist \
               --no-interaction \
-              --optimize-autoloader
-            compose exec -T app php artisan migrate --force
-            compose exec -T app php artisan optimize
-            compose exec -T app php artisan queue:restart
+              --optimize-autoloader </dev/null
+            compose exec -T app php artisan migrate --force </dev/null
+            compose exec -T app php artisan optimize </dev/null
+            compose exec -T app php artisan queue:restart </dev/null
           EOF
