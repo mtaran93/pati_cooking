@@ -18,6 +18,7 @@ class TranscodeRecipeVideoTest extends TestCase
     {
         return Recipe::create([
             'title' => 'Spaghetti alla carbonara',
+            'blurb' => 'Rețetă clasică italiană.',
             'time_label' => '25 min',
             'servings' => 4,
             'difficulty' => 'Ușor',
