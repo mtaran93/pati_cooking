@@ -1,7 +1,7 @@
 FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
-        libpq-dev libicu-dev libzip-dev unzip git \
+        libpq-dev libicu-dev libzip-dev unzip git ffmpeg \
     && docker-php-ext-install pdo pdo_pgsql intl zip \
     && rm -rf /var/lib/apt/lists/*
 

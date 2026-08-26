@@ -8,6 +8,18 @@ services:
     depends_on:
       - db
 
+  # Processes queued jobs (e.g. transcoding uploaded .mov videos to MP4 via
+  # ffmpeg). Same image as app, so it has ffmpeg and shares the code/storage.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan queue:work --tries=3 --timeout=600
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+
   nginx:
     image: nginx:alpine
     ports:

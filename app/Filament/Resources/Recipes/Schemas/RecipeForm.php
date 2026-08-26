@@ -93,7 +93,7 @@ class RecipeForm
                             ->label('Fișier')
                             ->disk('public')
                             ->directory('recipes/media')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime'])
                             ->required(),
                     ])
                     ->orderColumn('sort_order')

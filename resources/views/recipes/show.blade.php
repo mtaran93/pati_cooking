@@ -37,13 +37,57 @@
                     <div class="plate-empty">{{ $recipe->title }}</div>
                 @endif
             </figure>
-            <aside class="card" style="gap:0">
+            <aside class="card" style="gap:0" data-base-servings="{{ $recipe->servings }}">
                 <h6 style="margin:0 0 10px;color:var(--color-accent-700)">Ingrediente</h6>
+                <div class="portion-picker">
+                    <label for="portion-select">Porții</label>
+                    <input type="number" id="portion-select" min="0.5" max="100" step="0.5" value="{{ $recipe->servings }}" inputmode="decimal" style="font-feature-settings:'tnum' 1">
+                </div>
                 <ul style="list-style:none;margin:0;padding:0;font-size:14px;line-height:1.5">
                     @foreach ($recipe->ingredients ?? [] as $ingredient)
-                        <li style="padding:8px 0;border-top:1px solid var(--color-divider)">{{ $ingredient }}</li>
+                        <li style="padding:8px 0;border-top:1px solid var(--color-divider)" data-ingredient="{{ $ingredient }}">{{ $ingredient }}</li>
                     @endforeach
                 </ul>
+
+                <style>
+                    .portion-picker{display:flex;align-items:center;gap:10px;margin:0 0 6px;padding-bottom:10px}
+                    .portion-picker label{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent-700)}
+                    .portion-picker input{font:inherit;font-size:14px;width:84px;color:var(--color-text);background:var(--color-surface,transparent);border:1px solid var(--color-divider);border-radius:8px;padding:6px 10px}
+                    .portion-picker input:focus-visible{outline:2px solid var(--color-accent);outline-offset:1px}
+                </style>
+
+                <script>
+                    (function () {
+                        const card = document.querySelector('[data-base-servings]');
+                        if (!card) return;
+                        const input = card.querySelector('#portion-select');
+                        const items = card.querySelectorAll('li[data-ingredient]');
+                        const base = parseFloat(card.dataset.baseServings);
+                        if (!input || !base || isNaN(base)) return;
+
+                        function scaleNumber(raw, factor) {
+                            const value = parseFloat(raw.replace(',', '.')) * factor;
+                            if (isNaN(value)) return raw;
+                            const rounded = Math.round(value * 100) / 100;
+                            return String(rounded).replace('.', ',');
+                        }
+
+                        function update() {
+                            const portions = parseFloat(String(input.value).replace(',', '.'));
+                            if (isNaN(portions) || portions <= 0) return;
+                            const factor = portions / base;
+                            items.forEach(function (li) {
+                                const original = li.dataset.ingredient;
+                                li.textContent = original.replace(/\d+(?:[.,]\d+)?/g, function (m) {
+                                    return scaleNumber(m, factor);
+                                });
+                            });
+                        }
+
+                        input.addEventListener('input', update);
+                        update();
+                    })();
+                </script>
             </aside>
         </div>
 
