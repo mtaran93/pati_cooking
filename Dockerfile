@@ -1,7 +1,7 @@
 FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
-        libpq-dev libicu-dev libzip-dev unzip git \
+        libpq-dev libicu-dev libzip-dev unzip git ffmpeg \
     && docker-php-ext-install pdo pdo_pgsql intl zip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
 RUN git config --system --add safe.directory /var/www/html
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Raise PHP upload limits so recipe videos (iPhone .mov, up to 250 MB) go through.
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 # Match php-fpm's www-data to the host user so bind-mounted storage/ and
 # bootstrap/cache are writable in local dev. Override with build args if your

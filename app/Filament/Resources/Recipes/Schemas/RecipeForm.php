@@ -93,7 +93,9 @@ class RecipeForm
                             ->label('Fișier')
                             ->disk('public')
                             ->directory('recipes/media')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime'])
+                            ->maxSize(256000) // 250 MB — keep in sync with nginx / PHP / Livewire limits
+                            ->helperText('Imagini sau clipuri video (mp4, webm, mov). Maxim 250 MB per fișier.')
                             ->required(),
                     ])
                     ->orderColumn('sort_order')
