@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Transcode a non-web-safe recipe video (e.g. an iPhone `.mov`, usually HEVC)
@@ -74,7 +75,7 @@ class TranscodeRecipeVideo implements ShouldQueue
             // job so it retries / lands in failed_jobs.
             $disk->delete($target);
 
-            throw new \RuntimeException("ffmpeg exited with code {$result->exitCode()} for media {$media->getKey()}");
+            throw new RuntimeException("ffmpeg exited with code {$result->exitCode()} for media {$media->getKey()}");
         }
 
         // Point the row at the MP4 (the `saved` hook skips web-safe paths, so
