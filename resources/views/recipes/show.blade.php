@@ -115,6 +115,8 @@
 
             <div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Vizualizare media">
                 <button type="button" class="lightbox-close" data-lightbox-close aria-label="Închide">×</button>
+                <button type="button" class="lightbox-nav lightbox-prev" data-lightbox-prev aria-label="Media anterioară">‹</button>
+                <button type="button" class="lightbox-nav lightbox-next" data-lightbox-next aria-label="Media următoare">›</button>
                 <div class="lightbox-stage" data-lightbox-stage></div>
             </div>
 
@@ -129,6 +131,11 @@
                 .lightbox-stage img,.lightbox-stage video{max-width:100%;max-height:88vh;border-radius:10px;display:block}
                 .lightbox-close{position:absolute;top:clamp(10px,2vw,20px);right:clamp(10px,2vw,20px);width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:26px;line-height:1;cursor:pointer}
                 .lightbox-close:hover{background:rgba(255,255,255,.26)}
+                .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:32px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+                .lightbox-nav:hover{background:rgba(255,255,255,.26)}
+                .lightbox-prev{left:clamp(10px,2vw,20px)}
+                .lightbox-next{right:clamp(10px,2vw,20px)}
+                .lightbox[data-single] .lightbox-nav{display:none}
             </style>
 
             <script>
@@ -136,6 +143,10 @@
                     const lightbox = document.getElementById('lightbox');
                     if (!lightbox) return;
                     const stage = lightbox.querySelector('[data-lightbox-stage]');
+                    const thumbs = Array.from(document.querySelectorAll('.gallery-thumb'));
+                    let currentIndex = 0;
+
+                    if (thumbs.length <= 1) lightbox.setAttribute('data-single', '');
 
                     function close() {
                         lightbox.hidden = true;
@@ -143,9 +154,13 @@
                         document.body.style.overflow = '';
                     }
 
-                    function open(src, type) {
+                    function open(index) {
+                        const btn = thumbs[index];
+                        if (!btn) return;
+                        currentIndex = index;
+                        const type = btn.dataset.mediaType;
                         const el = document.createElement(type === 'video' ? 'video' : 'img');
-                        el.src = src;
+                        el.src = btn.dataset.mediaSrc;
                         if (type === 'video') {
                             el.controls = true;
                             el.autoplay = true;
@@ -158,17 +173,36 @@
                         document.body.style.overflow = 'hidden';
                     }
 
-                    document.querySelectorAll('.gallery-thumb').forEach(function (btn) {
+                    function showPrev() {
+                        open((currentIndex - 1 + thumbs.length) % thumbs.length);
+                    }
+                    function showNext() {
+                        open((currentIndex + 1) % thumbs.length);
+                    }
+
+                    thumbs.forEach(function (btn, index) {
                         btn.addEventListener('click', function () {
-                            open(btn.dataset.mediaSrc, btn.dataset.mediaType);
+                            open(index);
                         });
+                    });
+
+                    lightbox.querySelector('[data-lightbox-prev]').addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        showPrev();
+                    });
+                    lightbox.querySelector('[data-lightbox-next]').addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        showNext();
                     });
 
                     lightbox.addEventListener('click', function (e) {
                         if (e.target === lightbox || e.target.hasAttribute('data-lightbox-close')) close();
                     });
                     document.addEventListener('keydown', function (e) {
-                        if (e.key === 'Escape' && !lightbox.hidden) close();
+                        if (lightbox.hidden) return;
+                        if (e.key === 'Escape') close();
+                        else if (e.key === 'ArrowLeft') showPrev();
+                        else if (e.key === 'ArrowRight') showNext();
                     });
                 })();
             </script>
