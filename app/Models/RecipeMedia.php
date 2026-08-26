@@ -48,7 +48,7 @@ class RecipeMedia extends Model
                 return;
             }
 
-            TranscodeRecipeVideo::dispatch($media->getKey());
+            dispatch(new TranscodeRecipeVideo($media->getKey()));
         });
     }
 
